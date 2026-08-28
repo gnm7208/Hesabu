@@ -27,10 +27,11 @@ services:
         value: "false"
       - key: PYTHON_VERSION
         value: "3.12.7"
-      # Comma-separated, no trailing slash. Update with the real Vercel URL after
-      # the first frontend deploy (see client/vercel.json / VITE_API_URL).
+      # Comma-separated, no trailing slash. Note the "-sigma" suffix: plain
+      # hesabu.vercel.app belongs to an unrelated project, so Vercel assigned
+      # this one. Getting this wrong silently breaks every browser request.
       - key: CORS_ORIGINS
-        value: "https://hesabu.vercel.app"
+        value: "https://hesabu-sigma.vercel.app"
 
 databases:
   - name: hesabu-db
