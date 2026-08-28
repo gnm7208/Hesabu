@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  --color-chama-50: #f0fdf4;
+  --color-chama-100: #dcfce7;
+  --color-chama-500: #16a34a;
+  --color-chama-600: #15803d;
+  --color-chama-700: #166534;
+}
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
