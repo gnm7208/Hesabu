@@ -47,6 +47,30 @@ duplicate-detection behavior, not a bug, just sloppy test data on my part. Fixed
 script, not the app. Re-seeded the dev DB afterward to wash out test-run clutter, and cleaned
 up the throwaway driver script + `playwright-core`/`playwright` deps (not for the repo).
 
-**Next:** `git add` the new `client/` files + commit (still not committed — only ever on
-explicit request), OpenAPI spec, frontend tests (Vitest — currently zero, backend-only
-coverage), decide on toast notifications / better loading states.
+**Deployed (same day).** Public repo at github.com/gnm7208/Hesabu — note the initial push was
+rejected until `.github/workflows/ci.yml` was excluded, since the `gh` OAuth token lacks the
+`workflow` scope (Soko's `.gitignore` documents the same workaround; re-add with
+`git add -f`). Frontend on Vercel, API on Render, both auto-deploying from `main`.
+
+Two deploy gotchas worth remembering:
+
+- **Vercel assigned `hesabu-sigma.vercel.app`** — plain `hesabu.vercel.app` is an unrelated
+  project ("Neumorphism Calculator App"). I'd put the plain domain in `render.yaml`'s
+  `CORS_ORIGINS` as a placeholder, which would have blocked every browser request against a
+  stranger's domain. Verify the assigned domain via the API before trusting it.
+- **Database is Neon, not Render.** Render permits one active free Postgres per account and
+  `soko-db` holds it. Neon's free tier avoids touching Soko and doesn't expire the way
+  Render's does. Set via `DATABASE_URL` on the Render service, so `render.yaml`'s
+  `fromDatabase` block is aspirational — it's the external URL that's actually in effect.
+
+Also: the Render CLI/API path worked better than expected — I'd predicted it couldn't
+authorize GitHub repo access without dashboard OAuth, but the GitHub App was already
+installed from Soko, so service creation via API linked the repo fine. And `neon auth`'s
+browser OAuth works from here because this is a local desktop with Chrome, not a headless
+container. Production verified end-to-end in a real browser (login → group → contributions →
+arrears) with zero console errors and zero failed requests.
+
+**Next:** OpenAPI spec, frontend tests (Vitest — currently zero, backend-only coverage),
+toast notifications / better loading states. Housekeeping: rotate the Render + Vercel API
+tokens (they were pasted into a chat transcript), and delete the stray free "Hesabu render
+api" Key Value/Redis instance sitting unused in the Fiti/Production environment.
