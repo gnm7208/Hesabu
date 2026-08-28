@@ -5,6 +5,19 @@ group's M-PESA contribution records and turns them into a clean, dispute-proof l
 treasurer's monthly reconciliation stops being a manual nightmare of matching SMS messages to
 names in a notebook.
 
+## Live demo
+
+| | URL |
+|---|---|
+| **App** (Vercel) | https://hesabu-sigma.vercel.app |
+| **API** (Render) | https://hesabu-api.onrender.com |
+| API health check | https://hesabu-api.onrender.com/api/health |
+
+> Both run on free tiers, so the API **cold-starts after inactivity** — the first request can
+> take ~50s while the instance spins up. Give the login screen a moment on first load.
+
+Demo login (from `server/seed.py`): `treasurer@hesabu.local` / `treasurer123`
+
 ## The problem
 
 Chamas move billions of shillings in aggregate but still run on WhatsApp threads and paper
@@ -88,3 +101,24 @@ All routes are prefixed `/api/v1`.
 | Statements | `POST /groups/<id>/statements`, `GET /groups/<id>/statements`, `GET .../<statement_id>` |
 
 Money is always stored and moved as **integer minor units (cents)** — never floats.
+
+## Deployment
+
+| Piece | Where | Config |
+|---|---|---|
+| API | Render web service `hesabu-api` | [`render.yaml`](render.yaml) |
+| Database | Neon (external Postgres) | `DATABASE_URL` env var on Render |
+| Frontend | Vercel project `hesabu`, root dir `client/` | [`client/vercel.json`](client/vercel.json) |
+
+Both sides auto-deploy on push to `main`.
+
+Two things that will bite you if you re-deploy this elsewhere:
+
+- **The Vercel domain is `hesabu-sigma.vercel.app`, not `hesabu.vercel.app`** — the latter
+  belongs to an unrelated project. `CORS_ORIGINS` on Render must match the real domain exactly
+  (no trailing slash) or every browser request fails preflight.
+- **`VITE_API_URL` is inlined at build time**, not read at runtime. Changing it on Vercel has
+  no effect until you trigger a fresh build.
+
+The database is on Neon rather than Render because Render permits only one active free
+Postgres per account, and `soko-db` already holds that slot.
