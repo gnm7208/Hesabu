@@ -1,0 +1,39 @@
+services:
+  - type: web
+    name: hesabu-api
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "PYTHONPATH=. alembic -c server/migrations/alembic.ini upgrade head && PYTHONPATH=. gunicorn server.wsgi:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hesabu-db
+          property: connectionString
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ENV
+        value: production
+      - key: JWT_COOKIE_SECURE
+        value: "true"
+      - key: JWT_COOKIE_SAMESITE
+        value: "None"
+      # The frontend authenticates with a Bearer token on every mutating request
+      # (see client/src/lib/api.ts) rather than relying on the cookie, so the
+      # double-submit CSRF cookie protection is both unreadable cross-origin
+      # (document.cookie can't see another origin's cookie) and redundant here.
+      - key: JWT_COOKIE_CSRF_PROTECT
+        value: "false"
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      # Comma-separated, no trailing slash. Update with the real Vercel URL after
+      # the first frontend deploy (see client/vercel.json / VITE_API_URL).
+      - key: CORS_ORIGINS
+        value: "https://hesabu.vercel.app"
+
+databases:
+  - name: hesabu-db
+    plan: free
+    databaseName: hesabu
+    user: hesabu
