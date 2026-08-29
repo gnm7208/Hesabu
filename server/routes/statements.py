@@ -5,7 +5,7 @@ from server.extensions import db
 from server.schemas.statement import StatementSchema
 from server.services.statement_service import StatementService
 from server.utils.auth import get_current_user, group_member_required, treasurer_required
-from server.utils.errors import APIError
+from server.utils.errors import APIError, server_error
 
 bp = Blueprint("statements", __name__)
 
@@ -24,7 +24,7 @@ def generate_statement(group_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/statements", methods=["GET"])
@@ -35,7 +35,7 @@ def list_statements(group_id):
         statements = StatementService.list_for_group(group_id)
         return jsonify(StatementSchema(many=True).dump(statements)), 200
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/statements/<statement_id>", methods=["GET"])
@@ -48,4 +48,4 @@ def get_statement(group_id, statement_id):
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)

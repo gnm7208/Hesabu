@@ -5,7 +5,7 @@ from server.extensions import limiter
 from server.schemas.auth import UserSchema
 from server.services.auth_service import AuthService
 from server.utils.auth import get_current_user
-from server.utils.errors import APIError
+from server.utils.errors import APIError, server_error
 
 bp = Blueprint("auth", __name__)
 
@@ -30,7 +30,7 @@ def register():
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/auth/login", methods=["POST"])
@@ -53,7 +53,7 @@ def login():
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/auth/logout", methods=["POST"])

@@ -5,7 +5,7 @@ from server.extensions import db
 from server.schemas.member import MemberSchema
 from server.services.member_service import MemberService
 from server.utils.auth import group_member_required, treasurer_required
-from server.utils.errors import APIError
+from server.utils.errors import APIError, server_error
 
 bp = Blueprint("members", __name__)
 
@@ -23,7 +23,7 @@ def add_member(group_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/members", methods=["GET"])
@@ -34,7 +34,7 @@ def list_members(group_id):
         members = MemberService.list_for_group(group_id)
         return jsonify(MemberSchema(many=True).dump(members)), 200
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/members/<member_id>", methods=["PATCH"])
@@ -50,7 +50,7 @@ def update_member(group_id, member_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/members/<member_id>", methods=["DELETE"])
@@ -65,4 +65,4 @@ def remove_member(group_id, member_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)

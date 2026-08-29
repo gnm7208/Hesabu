@@ -5,7 +5,7 @@ from server.extensions import db, limiter
 from server.schemas.contribution import ContributionImportSchema, ContributionSchema
 from server.services.contribution_service import ContributionService
 from server.utils.auth import get_current_user, group_member_required, treasurer_required
-from server.utils.errors import APIError
+from server.utils.errors import APIError, server_error
 
 bp = Blueprint("contributions", __name__)
 
@@ -24,7 +24,7 @@ def add_contribution(group_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/contributions", methods=["GET"])
@@ -37,7 +37,7 @@ def list_contributions(group_id):
         contributions = ContributionService.list_for_group(group_id, member_id, confidence)
         return jsonify(ContributionSchema(many=True).dump(contributions)), 200
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/contributions/import", methods=["POST"])
@@ -63,7 +63,7 @@ def import_contributions(group_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/contributions/<contribution_id>/resolve", methods=["PATCH"])
@@ -79,7 +79,7 @@ def resolve_contribution(group_id, contribution_id):
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)
 
 
 @bp.route("/groups/<group_id>/arrears", methods=["GET"])
@@ -92,4 +92,4 @@ def get_arrears(group_id):
     except APIError as e:
         return jsonify(e.to_dict()), e.status_code
     except Exception as e:
-        return jsonify({"error": "server_error", "message": str(e)}), 500
+        return server_error(e)

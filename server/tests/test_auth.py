@@ -67,3 +67,46 @@ def test_logout(client):
     token, _ = register_user(client, "logout@example.com")
     resp = client.post("/api/v1/auth/logout", headers=auth_headers(token))
     assert resp.status_code == 200
+
+
+def test_server_error_does_not_leak_internals_in_production(client, app, monkeypatch):
+    """A 500 must never echo the exception text back to the client.
+
+    SQLAlchemy errors embed the failing SQL and its bound parameters — including
+    user email addresses — so returning str(exc) leaked schema and PII into the UI.
+    """
+    from server.services.auth_service import AuthService
+
+    leaked_sql = "SELECT users.email FROM users WHERE users.email = 'victim@example.com'"
+
+    def boom(*args, **kwargs):
+        raise RuntimeError(f"(psycopg2.OperationalError) SSL closed [SQL: {leaked_sql}]")
+
+    monkeypatch.setattr(AuthService, "login", boom)
+    app.config["ENV"] = "production"
+
+    resp = client.post("/api/v1/auth/login", json={"email": "a@b.com", "password": "x"})
+
+    assert resp.status_code == 500
+    body = resp.get_data(as_text=True)
+    assert "SELECT" not in body
+    assert "victim@example.com" not in body
+    assert "psycopg2" not in body
+    payload = resp.get_json()
+    assert payload["message"] == "An unexpected error occurred."
+    assert "detail" not in payload
+
+
+def test_server_error_keeps_detail_outside_production(client, app, monkeypatch):
+    from server.services.auth_service import AuthService
+
+    def boom(*args, **kwargs):
+        raise RuntimeError("something specific broke")
+
+    monkeypatch.setattr(AuthService, "login", boom)
+    app.config["ENV"] = "development"
+
+    resp = client.post("/api/v1/auth/login", json={"email": "a@b.com", "password": "x"})
+
+    assert resp.status_code == 500
+    assert resp.get_json()["detail"] == "something specific broke"

@@ -8,6 +8,15 @@ class Config:
         "DATABASE_URL", "postgresql://hesabu:hesabu_password@localhost:5433/hesabu"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Neon (and any serverless Postgres) suspends its compute when idle, which kills
+    # pooled connections without telling SQLAlchemy. Without pre_ping the pool hands
+    # out a dead socket and the first query after an idle period dies with
+    # "SSL connection has been closed unexpectedly". pre_ping costs one cheap
+    # round-trip per checkout; recycle caps connection age well under Neon's timeout.
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,
+        "pool_recycle": 280,
+    }
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret")
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900)))
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(

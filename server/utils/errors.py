@@ -1,4 +1,19 @@
-from flask import jsonify
+from flask import current_app, jsonify, request
+
+
+def server_error(exc):
+    """Generic 500 for unexpected exceptions.
+
+    Never return str(exc) to the client: SQLAlchemy errors embed the failing SQL,
+    column names and bound parameters (including user email addresses), which is
+    both an information leak and meaningless to the user. Log the full traceback
+    server-side instead, and keep the detail in non-production for debugging.
+    """
+    current_app.logger.exception("Unhandled error on %s %s", request.method, request.path)
+    payload = {"error": "server_error", "message": "An unexpected error occurred."}
+    if current_app.config.get("ENV") != "production":
+        payload["detail"] = str(exc)
+    return jsonify(payload), 500
 
 
 class APIError(Exception):
