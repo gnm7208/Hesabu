@@ -13,6 +13,10 @@ ignore = ["E501"]
 "server/migrations/env.py" = ["E402", "I001"]
 
 [tool.pytest.ini_options]
+# server/ has no __init__.py but server/tests/ does, so pytest would otherwise put
+# server/ on sys.path (not the repo root) and every `import server.*` fails. Setting
+# this means tests run with a bare `pytest`, without needing PYTHONPATH=. in CI.
+pythonpath = ["."]
 testpaths = ["server/tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
