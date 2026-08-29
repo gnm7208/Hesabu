@@ -1,4 +1,4 @@
-import { FileText } from "lucide-react";
+import { ChevronRight, FileText } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { useGenerateStatement, useStatements } from "../../hooks/useStatements";
 import { ApiError } from "../../lib/api";
@@ -6,6 +6,7 @@ import { formatCents } from "../../lib/money";
 import type { Statement } from "../../lib/types";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { EmptyState, ErrorNote, SkeletonRows } from "../ui/Feedback";
 import { Field, Input } from "../ui/Input";
 
 export function StatementsPanel({
@@ -24,30 +25,57 @@ export function StatementsPanel({
     <div className="flex flex-col gap-4">
       {isTreasurer && <GenerateForm groupId={groupId} />}
 
-      {isLoading && <p className="text-gray-500">Loading…</p>}
+      {isLoading && (
+        <Card className="px-4 py-0">
+          <SkeletonRows rows={3} />
+        </Card>
+      )}
 
-      <Card className="divide-y divide-gray-100 p-0">
-        {statements?.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSelected(s)}
-            className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-gray-50"
-          >
-            <div className="flex items-center gap-2">
-              <FileText size={16} className="text-gray-400" />
-              <span className="font-medium text-gray-900">
-                {s.period_start} → {s.period_end}
+      {statements?.length === 0 && (
+        <Card className="animate-rise">
+          <EmptyState
+            icon={FileText}
+            title="No statements yet"
+            hint={
+              isTreasurer
+                ? "Generate one to freeze a period's contributions into a shareable record."
+                : "Statements appear here once the treasurer closes a period."
+            }
+          />
+        </Card>
+      )}
+
+      {statements && statements.length > 0 && (
+        <Card className="divide-y divide-ink-200/60 p-0">
+          {statements.map((s, i) => (
+            <button
+              key={s.id}
+              onClick={() => setSelected(s)}
+              className="group animate-rise flex w-full items-center justify-between gap-3 px-4 py-3.5 text-left transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl hover:bg-ink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-chama-500/40"
+              style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+            >
+              <div className="flex min-w-0 items-center gap-2.5">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-ink-100 text-ink-500">
+                  <FileText size={15} />
+                </span>
+                <span className="tnum truncate text-sm font-medium text-ink-900">
+                  {s.period_start} → {s.period_end}
+                </span>
+              </div>
+              <span className="flex shrink-0 items-center gap-1.5">
+                <span className="tnum text-sm font-semibold text-ink-900">
+                  {formatCents(s.summary.total_collected_cents, currency)}
+                </span>
+                {/* Nudges toward the row it opens — the arrow leans in on hover. */}
+                <ChevronRight
+                  size={15}
+                  className="text-ink-300 transition-transform duration-150 ease-out-strong group-hover:translate-x-0.5 group-hover:text-ink-500"
+                />
               </span>
-            </div>
-            <span className="text-sm text-gray-500">
-              {formatCents(s.summary.total_collected_cents, currency)}
-            </span>
-          </button>
-        ))}
-        {statements?.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-gray-500">No statements yet.</p>
-        )}
-      </Card>
+            </button>
+          ))}
+        </Card>
+      )}
 
       {selected && (
         <StatementDetail statement={selected} currency={currency} onClose={() => setSelected(null)} />
@@ -95,7 +123,11 @@ function GenerateForm({ groupId }: { groupId: string }) {
           {generateStatement.isPending ? "Generating…" : "Generate statement"}
         </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-3">
+          <ErrorNote>{error}</ErrorNote>
+        </div>
+      )}
     </Card>
   );
 }
@@ -113,45 +145,45 @@ function StatementDetail({
   return (
     <Card>
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-medium text-gray-900">
+        <h3 className="font-medium text-ink-900">
           Statement: {statement.period_start} → {statement.period_end}
         </h3>
-        <button onClick={onClose} className="text-sm text-gray-400 hover:text-gray-700">
+        <button onClick={onClose} className="text-sm text-ink-400 hover:text-ink-700">
           Close
         </button>
       </div>
-      <dl className="mb-4 grid grid-cols-3 gap-3 text-sm">
-        <div>
-          <dt className="text-gray-500">Collected</dt>
-          <dd className="font-semibold text-gray-900">
+      <dl className="mb-5 grid grid-cols-3 gap-2.5 text-sm">
+        <div className="rounded-lg bg-ink-50 px-3 py-2.5">
+          <dt className="text-xs text-ink-500">Collected</dt>
+          <dd className="tnum mt-0.5 font-semibold text-ink-900">
             {formatCents(summary.total_collected_cents, currency)}
           </dd>
         </div>
-        <div>
-          <dt className="text-gray-500">Expected</dt>
-          <dd className="font-semibold text-gray-900">
+        <div className="rounded-lg bg-ink-50 px-3 py-2.5">
+          <dt className="text-xs text-ink-500">Expected</dt>
+          <dd className="tnum mt-0.5 font-semibold text-ink-900">
             {formatCents(summary.total_expected_cents, currency)}
           </dd>
         </div>
-        <div>
-          <dt className="text-gray-500">Unmatched</dt>
-          <dd className="font-semibold text-amber-600">
+        <div className="rounded-lg bg-amber-50 px-3 py-2.5">
+          <dt className="text-xs text-amber-700/80">Unmatched</dt>
+          <dd className="tnum mt-0.5 font-semibold text-amber-700">
             {formatCents(summary.unmatched_cents, currency)}
           </dd>
         </div>
       </dl>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-gray-500">
-            <th className="pb-1 font-normal">Member</th>
-            <th className="pb-1 font-normal">Paid</th>
+          <tr className="text-left text-ink-500">
+            <th className="pb-1.5 font-normal">Member</th>
+            <th className="pb-1.5 text-right font-normal">Paid</th>
           </tr>
         </thead>
         <tbody>
           {summary.per_member.map((row) => (
-            <tr key={row.group_member_id} className="border-t border-gray-100">
-              <td className="py-1.5 text-gray-900">{row.full_name}</td>
-              <td className="py-1.5 text-gray-700">{formatCents(row.paid_cents, currency)}</td>
+            <tr key={row.group_member_id} className="border-t border-ink-200/60">
+              <td className="py-2 text-ink-900">{row.full_name}</td>
+              <td className="tnum py-2 text-right font-medium text-ink-700">{formatCents(row.paid_cents, currency)}</td>
             </tr>
           ))}
         </tbody>

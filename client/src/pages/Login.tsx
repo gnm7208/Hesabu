@@ -1,6 +1,8 @@
+import { Wallet } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
+import { ErrorNote } from "../components/ui/Feedback";
 import { Field, Input } from "../components/ui/Input";
 import { useAuth } from "../hooks/useAuth";
 import { ApiError } from "../lib/api";
@@ -28,10 +30,16 @@ export function Login() {
   }
 
   return (
-    <div className="mx-auto mt-16 max-w-sm">
-      <h1 className="mb-1 text-2xl font-semibold text-gray-900">Welcome back</h1>
-      <p className="mb-6 text-sm text-gray-500">Log in to your chama's books.</p>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="mx-auto mt-20 max-w-sm px-4">
+      <div className="animate-rise">
+        <div className="mb-5 flex size-10 items-center justify-center rounded-xl bg-chama-600 text-white shadow-card-lift">
+          <Wallet size={20} strokeWidth={2.1} />
+        </div>
+        <h1 className="text-display text-ink-900">Welcome back</h1>
+        <p className="mt-1.5 text-sm text-ink-500">Log in to your chama's books.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="animate-rise mt-7 flex flex-col gap-4" style={{ animationDelay: "60ms" }}>
         <Field label="Email">
           <Input
             type="email"
@@ -39,6 +47,7 @@ export function Login() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
+            placeholder="you@example.com"
           />
         </Field>
         <Field label="Password">
@@ -50,14 +59,18 @@ export function Login() {
             autoComplete="current-password"
           />
         </Field>
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        <Button type="submit" disabled={isSubmitting}>
+        {error && <ErrorNote>{error}</ErrorNote>}
+        <Button type="submit" disabled={isSubmitting} className="mt-1 w-full py-2.5">
           {isSubmitting ? "Logging in…" : "Log in"}
         </Button>
       </form>
-      <p className="mt-4 text-sm text-gray-500">
+
+      <p className="animate-rise mt-5 text-sm text-ink-500" style={{ animationDelay: "120ms" }}>
         No account?{" "}
-        <Link to="/register" className="text-chama-600 hover:underline">
+        <Link
+          to="/register"
+          className="rounded font-medium text-chama-700 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
+        >
           Register
         </Link>
       </p>

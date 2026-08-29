@@ -13,28 +13,34 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-ink-50">
+      {/* Translucent chrome rather than an opaque strip: content passes under it,
+          so the page reads as one surface with a floating layer over it. The
+          saturate() keeps colour from going flat behind the blur. */}
+      <header className="sticky top-0 z-20 border-b border-ink-200/60 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <Link to="/dashboard" className="flex items-center gap-2 font-semibold text-chama-700">
-            <Wallet size={20} />
+          <Link
+            to="/dashboard"
+            className="flex items-center gap-2 rounded-md font-semibold tracking-[-0.011em] text-chama-700 transition-opacity duration-150 hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
+          >
+            <Wallet size={19} strokeWidth={2.1} />
             Hesabu
           </Link>
           {user && (
-            <div className="flex items-center gap-3 text-sm text-gray-600">
-              <span>{user.full_name}</span>
+            <div className="flex items-center gap-1 text-sm">
+              <span className="hidden px-2 text-ink-600 sm:inline">{user.full_name}</span>
               <button
                 onClick={handleLogout}
-                className="flex items-center gap-1 rounded-md px-2 py-1 text-gray-500 hover:bg-gray-100 hover:text-gray-800"
+                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-ink-500 transition-[transform,background-color,color] duration-150 ease-out-strong hover:bg-ink-100 hover:text-ink-800 active:scale-[0.97] active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
               >
-                <LogOut size={16} />
+                <LogOut size={15} />
                 Log out
               </button>
             </div>
           )}
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-7">{children}</main>
     </div>
   );
 }

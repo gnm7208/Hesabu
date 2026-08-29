@@ -1,22 +1,133 @@
 @import "tailwindcss";
 
 @theme {
+  /* Brand green. M-PESA's palette is the reference point every Kenyan treasurer
+     already reads as "money moved", so the ramp is tuned warm rather than the
+     blue-green Tailwind ships. */
   --color-chama-50: #f0fdf4;
   --color-chama-100: #dcfce7;
-  --color-chama-500: #16a34a;
-  --color-chama-600: #15803d;
-  --color-chama-700: #166534;
+  --color-chama-200: #bbf7d0;
+  --color-chama-300: #86efac;
+  --color-chama-400: #4ade80;
+  --color-chama-500: #22c55e;
+  --color-chama-600: #16a34a;
+  --color-chama-700: #15803d;
+  --color-chama-800: #166534;
+  --color-chama-900: #14532d;
+  --color-chama-950: #052e16;
+
+  /* Neutrals carry a few degrees of green so text sits in the same family as the
+     brand instead of reading as a separate cold grey next to it. */
+  --color-ink-50: #f7f9f8;
+  --color-ink-100: #eef1f0;
+  --color-ink-200: #e2e7e5;
+  --color-ink-300: #cbd3d0;
+  --color-ink-400: #9aa5a1;
+  --color-ink-500: #6b7772;
+  --color-ink-600: #4d5854;
+  --color-ink-700: #3a4340;
+  --color-ink-800: #252c2a;
+  --color-ink-900: #161b19;
+
+  /* Built-in easings are too weak to read as deliberate. These are the strong
+     variants: ease-out for anything entering, ease-in-out for on-screen movement.
+     ease-in is deliberately absent — it delays the first frame, which is exactly
+     when the user is looking. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* Two-layer shadows: a tight contact shadow plus a wider ambient one. A single
+     large blur reads as a sticker floating above the page. */
+  --shadow-card: 0 1px 2px rgb(22 43 34 / 0.04), 0 1px 3px rgb(22 43 34 / 0.06);
+  --shadow-card-lift: 0 4px 12px rgb(22 43 34 / 0.08), 0 2px 4px rgb(22 43 34 / 0.04);
+  --shadow-pop: 0 8px 24px rgb(22 43 34 / 0.12), 0 2px 6px rgb(22 43 34 / 0.06);
 }
 
 :root {
-  /* This UI is light-only (white cards on gray-50, gray-900 text). Declaring
-     "light dark" made browsers in OS dark mode apply their dark user-agent styles
-     to form controls — white text over our white input backgrounds, so typed text
-     was invisible until selected. */
+  /* Light-only UI. Declaring "light dark" made dark-mode browsers apply their own
+     white-on-white user-agent styles to form controls. */
   color-scheme: light;
 }
 
 body {
   margin: 0;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  background: var(--color-ink-50);
+  color: var(--color-ink-800);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Tracking is size-specific: large text reads too loose at default spacing, so it
+   tightens as it grows. A single letter-spacing value would be wrong somewhere. */
+.text-display {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  letter-spacing: -0.021em;
+  font-weight: 650;
+}
+
+.text-title {
+  font-size: 1.0625rem;
+  line-height: 1.3;
+  letter-spacing: -0.011em;
+  font-weight: 600;
+}
+
+/* Every figure in a ledger is compared against the one above it, so digits must
+   occupy identical width — proportional figures make columns visibly wobble. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrance for list rows and panels. Staggered by inline delay at the call site. */
+.animate-rise {
+  animation: rise 340ms var(--ease-out-strong) backwards;
+}
+
+@keyframes shimmer {
+  to {
+    background-position-x: -200%;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--color-ink-100) 40%,
+    var(--color-ink-200) 50%,
+    var(--color-ink-100) 60%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+/* Reduced motion means gentler, not absent: opacity still communicates arrival,
+   but nothing travels and nothing loops. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: rise 1ms linear backwards;
+    transform: none;
+  }
+
+  .skeleton {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+  }
 }

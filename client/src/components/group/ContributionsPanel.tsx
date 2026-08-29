@@ -1,4 +1,4 @@
-import { Upload } from "lucide-react";
+import { Inbox, Upload } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import {
   useAddContribution,
@@ -13,6 +13,7 @@ import type { ContributionMethod, Group, ImportResult } from "../../lib/types";
 import { ConfidenceBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { EmptyState, ErrorNote, SkeletonRows } from "../ui/Feedback";
 import { Field, Input, Select, TextArea } from "../ui/Input";
 
 export function ContributionsPanel({
@@ -27,6 +28,11 @@ export function ContributionsPanel({
   const { data: contributions, isLoading } = useContributions(groupId);
   const { data: members } = useMembers(groupId);
   const membersById = new Map((members ?? []).map((m) => [m.id, m]));
+  // If any row needs resolving, every row reserves the slot — otherwise the
+  // resolve control shoves that row's amount out of the column, which is the
+  // one row the treasurer is scanning for.
+  const showResolveSlot =
+    isTreasurer && (contributions ?? []).some((c) => c.match_confidence === "unmatched");
 
   return (
     <div className="flex flex-col gap-4">
@@ -37,38 +43,87 @@ export function ContributionsPanel({
         </div>
       )}
 
-      {isLoading && <p className="text-gray-500">Loading…</p>}
+      {isLoading && (
+        <Card className="px-4 py-0">
+          <SkeletonRows rows={4} />
+        </Card>
+      )}
 
-      <Card className="divide-y divide-gray-100 p-0">
-        {contributions?.map((c) => {
-          const member = c.group_member_id ? membersById.get(c.group_member_id) : null;
-          return (
-            <div key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
-              <div className="min-w-0">
-                <p className="font-medium text-gray-900">
-                  {member?.full_name ?? "Unmatched"}{" "}
-                  <span className="font-normal text-gray-500">
-                    · {formatCents(c.amount_cents, group.currency)}
+      {contributions && contributions.length > 0 && (
+        <Card className="divide-y divide-ink-200/60 p-0">
+          {contributions.map((c, i) => {
+            const member = c.group_member_id ? membersById.get(c.group_member_id) : null;
+            const needsAttention = c.match_confidence === "unmatched";
+            return (
+              <div
+                key={c.id}
+                className={
+                  "animate-rise flex items-center justify-between gap-3 px-4 py-3.5 " +
+                  "transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl " +
+                  // The one row a treasurer must act on gets a persistent tint, so it
+                  // stays findable while scanning a long ledger.
+                  (needsAttention ? "bg-red-50/40 hover:bg-red-50/70" : "hover:bg-ink-50")
+                }
+                style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+              >
+                <div className="min-w-0">
+                  <p
+                    className={
+                      "truncate text-sm font-medium " +
+                      (member ? "text-ink-900" : "text-ink-400 italic")
+                    }
+                  >
+                    {member?.full_name ?? "Unmatched"}
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-ink-400">
+                    {new Date(c.contributed_at).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                    })}
+                    {" · "}
+                    {c.method}
+                    {c.mpesa_code ? ` · ${c.mpesa_code}` : ""}
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  {/* Fixed widths, not intrinsic ones: badge labels differ in length
+                      ("auto" vs "unmatched"), so without a reserved column every
+                      amount lands at a different x and the tabular figures buy
+                      nothing. These two spans are what make the column scannable. */}
+                  <span className="tnum w-28 text-right text-sm font-semibold text-ink-900">
+                    {formatCents(c.amount_cents, group.currency)}
                   </span>
-                </p>
-                <p className="truncate text-xs text-gray-400">
-                  {new Date(c.contributed_at).toLocaleDateString()} · {c.method}
-                  {c.mpesa_code ? ` · ${c.mpesa_code}` : ""}
-                </p>
+                  <span className="flex w-[5.5rem] justify-start">
+                    <ConfidenceBadge value={c.match_confidence} />
+                  </span>
+                  {showResolveSlot && (
+                    <span className="flex w-[13.5rem] justify-end">
+                      {needsAttention && (
+                        <ResolveControl groupId={groupId} contributionId={c.id} />
+                      )}
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <ConfidenceBadge value={c.match_confidence} />
-                {isTreasurer && c.match_confidence === "unmatched" && (
-                  <ResolveControl groupId={groupId} contributionId={c.id} />
-                )}
-              </div>
-            </div>
-          );
-        })}
-        {contributions?.length === 0 && (
-          <p className="px-4 py-6 text-center text-sm text-gray-500">No contributions yet.</p>
-        )}
-      </Card>
+            );
+          })}
+        </Card>
+      )}
+
+      {contributions?.length === 0 && (
+        <Card className="animate-rise">
+          <EmptyState
+            icon={Inbox}
+            title="No contributions yet"
+            hint={
+              isTreasurer
+                ? "Paste a batch of M-PESA confirmation messages above to import them."
+                : "Contributions will appear here once the treasurer records them."
+            }
+          />
+        </Card>
+      )}
     </div>
   );
 }
@@ -109,16 +164,20 @@ function ImportForm({ groupId }: { groupId: string }) {
           {importContributions.isPending ? "Importing…" : "Import"}
         </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-3">
+          <ErrorNote>{error}</ErrorNote>
+        </div>
+      )}
       {result && (
-        <div className="mt-3 rounded-md bg-gray-50 p-3 text-sm text-gray-600">
+        <div className="mt-3 rounded-md bg-ink-50 p-3 text-sm text-ink-600">
           <p>
             Imported {result.imported.length}, {result.duplicate_count} duplicate(s) skipped.
           </p>
           {result.unparsed.length > 0 && (
             <div className="mt-1">
               <p className="text-amber-700">{result.unparsed.length} line(s) couldn't be read:</p>
-              <ul className="ml-4 list-disc text-xs text-gray-500">
+              <ul className="ml-4 list-disc text-xs text-ink-500">
                 {result.unparsed.map((line) => (
                   <li key={line} className="truncate">
                     {line}
@@ -202,7 +261,11 @@ function ManualAddForm({ groupId, currency }: { groupId: string; currency: strin
           {addContribution.isPending ? "Saving…" : "Record contribution"}
         </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-3">
+          <ErrorNote>{error}</ErrorNote>
+        </div>
+      )}
     </Card>
   );
 }

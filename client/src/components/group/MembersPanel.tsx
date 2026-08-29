@@ -1,8 +1,9 @@
-import { UserPlus, X } from "lucide-react";
+import { UserPlus, Users, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { RoleBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { EmptyState, ErrorNote, SkeletonRows } from "../ui/Feedback";
 import { Field, Input, Select } from "../ui/Input";
 import { useAddMember, useMembers, useRemoveMember } from "../../hooks/useMembers";
 import { ApiError } from "../../lib/api";
@@ -25,24 +26,47 @@ export function MembersPanel({ groupId, isTreasurer }: { groupId: string; isTrea
         </div>
       )}
 
-      {isLoading && <p className="text-gray-500">Loading…</p>}
+      {isLoading && (
+        <Card className="px-4 py-0">
+          <SkeletonRows rows={4} />
+        </Card>
+      )}
 
-      <Card className="divide-y divide-gray-100 p-0">
-        {members?.map((member) => (
-          <div key={member.id} className="flex items-center justify-between px-4 py-3">
-            <div>
-              <p className="font-medium text-gray-900">{member.full_name}</p>
-              <p className="text-sm text-gray-500">{member.phone ?? "no phone on file"}</p>
+      {members?.length === 0 && (
+        <Card className="animate-rise">
+          <EmptyState
+            icon={Users}
+            title="No members yet"
+            hint="Add members with their M-PESA phone numbers so imported payments match automatically."
+          />
+        </Card>
+      )}
+
+      {members && members.length > 0 && (
+      <Card className="divide-y divide-ink-200/60 p-0">
+        {members?.map((member, i) => (
+          <div
+            key={member.id}
+            className="animate-rise flex items-center justify-between gap-3 px-4 py-3.5 transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl hover:bg-ink-50"
+            style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}
+          >
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium text-ink-900">{member.full_name}</p>
+              {/* A member with no phone can never be auto-matched, so say that
+                  rather than leaving an ambiguous blank. */}
+              <p className={"mt-0.5 truncate text-xs " + (member.phone ? "tnum text-ink-400" : "text-ink-400 italic")}>
+                {member.phone ?? "no phone on file"}
+              </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <RoleBadge value={member.role} />
               {member.status === "inactive" && (
-                <span className="text-xs text-gray-400">inactive</span>
+                <span className="text-xs text-ink-400">inactive</span>
               )}
               {isTreasurer && member.role !== "treasurer" && member.status === "active" && (
                 <button
                   onClick={() => removeMember.mutate(member.id)}
-                  className="text-gray-400 hover:text-red-600"
+                  className="rounded-md p-1 text-ink-400 transition-[transform,color,background-color] duration-150 ease-out-strong hover:bg-red-50 hover:text-red-600 active:scale-90 active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/40"
                   title="Remove member"
                 >
                   <X size={16} />
@@ -52,6 +76,7 @@ export function MembersPanel({ groupId, isTreasurer }: { groupId: string; isTrea
           </div>
         ))}
       </Card>
+      )}
     </div>
   );
 }
@@ -98,7 +123,11 @@ function AddMemberForm({ groupId, onDone }: { groupId: string; onDone: () => voi
           {addMember.isPending ? "Adding…" : "Add"}
         </Button>
       </form>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {error && (
+        <div className="mt-3">
+          <ErrorNote>{error}</ErrorNote>
+        </div>
+      )}
     </Card>
   );
 }

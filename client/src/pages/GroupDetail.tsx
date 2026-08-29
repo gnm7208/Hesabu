@@ -4,9 +4,11 @@ import { ArrearsPanel } from "../components/group/ArrearsPanel";
 import { ContributionsPanel } from "../components/group/ContributionsPanel";
 import { MembersPanel } from "../components/group/MembersPanel";
 import { StatementsPanel } from "../components/group/StatementsPanel";
+import { Tabs } from "../components/ui/Tabs";
 import { useAuth } from "../hooks/useAuth";
 import { useGroup } from "../hooks/useGroups";
 import { useMembers } from "../hooks/useMembers";
+import { Skeleton } from "../components/ui/Feedback";
 import { formatCents } from "../lib/money";
 
 type Tab = "members" | "contributions" | "arrears" | "statements";
@@ -26,37 +28,35 @@ export function GroupDetail() {
   const [tab, setTab] = useState<Tab>("contributions");
 
   if (!groupId) return null;
-  if (isLoading || !group) return <p className="text-gray-500">Loading…</p>;
+  if (isLoading || !group)
+    return (
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-7 w-52" />
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-4 h-9 w-full" />
+      </div>
+    );
 
   const isTreasurer =
     members?.some((m) => m.user_id === user?.id && m.role === "treasurer") ?? false;
 
   return (
     <div>
-      <div className="mb-4">
-        <h1 className="text-2xl font-semibold text-gray-900">{group.name}</h1>
-        <p className="text-sm text-gray-500">
-          {formatCents(group.contribution_amount_cents, group.currency)} /{" "}
-          {group.contribution_frequency} · {group.currency}
+      <div className="animate-rise mb-5">
+        <h1 className="text-display text-ink-900">{group.name}</h1>
+        <p className="mt-1 text-sm text-ink-500">
+          <span className="tnum font-medium text-ink-700">
+            {formatCents(group.contribution_amount_cents, group.currency)}
+          </span>{" "}
+          / {group.contribution_frequency} · {group.currency}
         </p>
       </div>
 
-      <div className="mb-4 flex gap-1 border-b border-gray-200">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`border-b-2 px-3 py-2 text-sm font-medium ${
-              tab === t.id
-                ? "border-chama-600 text-chama-700"
-                : "border-transparent text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-5">
+        <Tabs tabs={TABS} value={tab} onChange={setTab} />
       </div>
 
+      <div key={tab} className="animate-rise">
       {tab === "members" && <MembersPanel groupId={groupId} isTreasurer={isTreasurer} />}
       {tab === "contributions" && (
         <ContributionsPanel groupId={groupId} group={group} isTreasurer={isTreasurer} />
@@ -65,6 +65,7 @@ export function GroupDetail() {
       {tab === "statements" && (
         <StatementsPanel groupId={groupId} currency={group.currency} isTreasurer={isTreasurer} />
       )}
+      </div>
     </div>
   );
 }

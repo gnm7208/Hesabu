@@ -14,7 +14,7 @@ export function Field({
 }: { label: string; children: ReactNode } & LabelHTMLAttributes<HTMLLabelElement>) {
   return (
     <label className={`flex flex-col gap-1 text-sm ${className}`} {...props}>
-      <span className="font-medium text-gray-700">{label}</span>
+      <span className="font-medium text-ink-600">{label}</span>
       {children}
     </label>
   );
@@ -24,7 +24,7 @@ export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-chama-500 focus:outline-none focus:ring-1 focus:ring-chama-500 ${props.className ?? ""}`}
+      className={`rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 transition-[border-color,box-shadow] duration-150 ease-out-strong focus:border-chama-500 focus:outline-none focus:ring-[3px] focus:ring-chama-500/20 ${props.className ?? ""}`}
     />
   );
 }
@@ -33,7 +33,7 @@ export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:border-chama-500 focus:outline-none focus:ring-1 focus:ring-chama-500 ${props.className ?? ""}`}
+      className={`rounded-lg border border-ink-300 bg-white px-3 py-2 text-sm text-ink-900 placeholder:text-ink-400 transition-[border-color,box-shadow] duration-150 ease-out-strong focus:border-chama-500 focus:outline-none focus:ring-[3px] focus:ring-chama-500/20 ${props.className ?? ""}`}
     />
   );
 }
@@ -42,7 +42,7 @@ export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
       {...props}
-      className={`rounded-md border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 placeholder:text-gray-400 focus:border-chama-500 focus:outline-none focus:ring-1 focus:ring-chama-500 ${props.className ?? ""}`}
+      className={`rounded-lg border border-ink-300 bg-white px-3 py-2 font-mono text-sm text-ink-900 placeholder:text-ink-400 transition-[border-color,box-shadow] duration-150 ease-out-strong focus:border-chama-500 focus:outline-none focus:ring-[3px] focus:ring-chama-500/20 ${props.className ?? ""}`}
     />
   );
 }
