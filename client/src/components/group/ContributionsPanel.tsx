@@ -1,4 +1,4 @@
-import { Inbox, Upload } from "lucide-react";
+import { Inbox, PenLine, Upload, X } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import {
   useAddContribution,
@@ -33,15 +33,40 @@ export function ContributionsPanel({
   // one row the treasurer is scanning for.
   const showResolveSlot =
     isTreasurer && (contributions ?? []).some((c) => c.match_confidence === "unmatched");
+  const [entry, setEntry] = useState<"import" | "manual" | null>(null);
 
   return (
     <div className="flex flex-col gap-4">
+      {/* The ledger is what this page is for, so the two entry forms are actions
+          rather than permanent fixtures competing with it for the top of the
+          column. Only one can be open — they do the same job by different routes,
+          and showing both invites the wrong one being filled in. */}
       {isTreasurer && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <ImportForm groupId={groupId} />
-          <ManualAddForm groupId={groupId} currency={group.currency} />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant={entry === "import" ? "primary" : "secondary"}
+            onClick={() => setEntry((v) => (v === "import" ? null : "import"))}
+          >
+            <Upload size={15} />
+            Import M-PESA SMS
+          </Button>
+          <Button
+            variant={entry === "manual" ? "primary" : "secondary"}
+            onClick={() => setEntry((v) => (v === "manual" ? null : "manual"))}
+          >
+            <PenLine size={15} />
+            Record manually
+          </Button>
+          {entry && (
+            <Button variant="ghost" onClick={() => setEntry(null)} aria-label="Close form">
+              <X size={15} />
+            </Button>
+          )}
         </div>
       )}
+
+      {entry === "import" && <ImportForm groupId={groupId} />}
+      {entry === "manual" && <ManualAddForm groupId={groupId} currency={group.currency} />}
 
       {isLoading && (
         <Card className="px-4 py-0">
@@ -50,7 +75,7 @@ export function ContributionsPanel({
       )}
 
       {contributions && contributions.length > 0 && (
-        <Card className="divide-y divide-ink-200/60 p-0">
+        <Card className="divide-y divide-ink-200/60 overflow-x-auto p-0">
           {contributions.map((c, i) => {
             const member = c.group_member_id ? membersById.get(c.group_member_id) : null;
             const needsAttention = c.match_confidence === "unmatched";
@@ -58,7 +83,7 @@ export function ContributionsPanel({
               <div
                 key={c.id}
                 className={
-                  "animate-rise flex items-center justify-between gap-3 px-4 py-3.5 " +
+                  "animate-rise flex min-w-[38rem] items-center justify-between gap-3 px-4 py-3.5 " +
                   "transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl " +
                   // The one row a treasurer must act on gets a persistent tint, so it
                   // stays findable while scanning a long ledger.
