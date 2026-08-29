@@ -27,7 +27,7 @@ jobs:
       - run: pip install -r requirements.txt
       - run: pytest server/tests/ -v --cov=server
         env:
-          DATABASE_URL: sqlite:///:memory:
+          DATABASE_URL: "sqlite:///:memory:"
           JWT_SECRET_KEY: test-secret-key
           ENV: testing
 
