@@ -9,7 +9,11 @@
 }
 
 :root {
-  color-scheme: light dark;
+  /* This UI is light-only (white cards on gray-50, gray-900 text). Declaring
+     "light dark" made browsers in OS dark mode apply their dark user-agent styles
+     to form controls — white text over our white input backgrounds, so typed text
+     was invisible until selected. */
+  color-scheme: light;
 }
 
 body {
