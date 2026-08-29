@@ -16,7 +16,16 @@ names in a notebook.
 > Both run on free tiers, so the API **cold-starts after inactivity** — the first request can
 > take ~50s while the instance spins up. Give the login screen a moment on first load.
 
-Demo login (from `server/seed.py`): `treasurer@hesabu.local` / `treasurer123`
+Demo logins (from `server/seed.py`) — every account uses the password `hesabu123`:
+
+| Account | Chama | Theme |
+|---|---|---|
+| `treasurer@hesabu.local` | Umoja Chama | Harambee |
+| `mboga@hesabu.local` | Mama Mboga Savings | Mama Mboga |
+| `boda@hesabu.local` | Boda Riders SACCO | Boda Riders |
+| `shule@hesabu.local` | Shule Fees Fund | School Fees |
+| `kilimo@hesabu.local` | Kilimo Growers | Kilimo |
+| `biashara@hesabu.local` | Biashara Circle | Biashara |
 
 ## The problem
 
@@ -101,6 +110,23 @@ All routes are prefixed `/api/v1`.
 | Statements | `POST /groups/<id>/statements`, `GET /groups/<id>/statements`, `GET .../<statement_id>` |
 
 Money is always stored and moved as **integer minor units (cents)** — never floats.
+
+## Themes
+
+Each chama carries a theme matching what the group is *for* — a mama mboga group
+gets produce, boda riders get wheels — chosen by the treasurer, never inferred from
+the name. A theme is one entry in [`client/src/lib/themes.ts`](client/src/lib/themes.ts):
+an accent ramp plus a motif id, with the artwork in
+[`ThemeBackdrop.tsx`](client/src/components/ThemeBackdrop.tsx).
+
+Adding one means appending to that array, drawing a tile, and adding the slug to
+`THEMES` in [`server/schemas/group.py`](server/schemas/group.py) (the server only
+validates the slug; the client owns the palette and artwork).
+
+The palette swap needs no themed classnames: Tailwind v4 emits its theme colours as
+CSS custom properties and every utility reads them through `var()`, so writing
+`--color-chama-*` onto a wrapper re-tints every `bg-chama-*` / `text-chama-*` inside
+it.
 
 ## Deployment
 

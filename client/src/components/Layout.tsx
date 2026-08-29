@@ -13,7 +13,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-ink-50">
+    <div className="min-h-screen">
       {/* Translucent chrome rather than an opaque strip: content passes under it,
           so the page reads as one surface with a floating layer over it. The
           saturate() keeps colour from going flat behind the blur. */}

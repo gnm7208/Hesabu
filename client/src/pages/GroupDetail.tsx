@@ -1,11 +1,14 @@
-import { AlertCircle, ArrowLeft, FileText, Receipt, Users } from "lucide-react";
+import { AlertCircle, ArrowLeft, FileText, Palette, Receipt, Users } from "lucide-react";
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrearsPanel } from "../components/group/ArrearsPanel";
 import { ContributionsPanel } from "../components/group/ContributionsPanel";
 import { GroupSummary } from "../components/group/GroupSummary";
+import { ThemePicker } from "../components/group/ThemePicker";
 import { MembersPanel } from "../components/group/MembersPanel";
 import { StatementsPanel } from "../components/group/StatementsPanel";
+import { ThemeBackdrop } from "../components/ThemeBackdrop";
+import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Feedback";
 import { SideNav, type NavItem } from "../components/ui/SideNav";
 import { useAuth } from "../hooks/useAuth";
@@ -13,6 +16,7 @@ import { useArrears, useContributions } from "../hooks/useContributions";
 import { useGroup } from "../hooks/useGroups";
 import { useMembers } from "../hooks/useMembers";
 import { formatCents } from "../lib/money";
+import { getTheme, themeVars } from "../lib/themes";
 
 type Tab = "members" | "contributions" | "arrears" | "statements";
 
@@ -24,6 +28,7 @@ export function GroupDetail() {
   const { data: contributions } = useContributions(groupId ?? "");
   const { data: arrears } = useArrears(groupId ?? "");
   const [tab, setTab] = useState<Tab>("contributions");
+  const [pickingTheme, setPickingTheme] = useState(false);
 
   if (!groupId) return null;
   if (isLoading || !group) {
@@ -63,8 +68,14 @@ export function GroupDetail() {
     { id: "members", label: "Members", icon: Users, count: members?.length },
   ];
 
+  const theme = getTheme(group.theme);
+
   return (
-    <div>
+    // Scoping the accent vars here re-tints every chama-* utility in the subtree,
+    // so the whole page takes the group's colour without any themed classnames.
+    <div style={themeVars(theme)}>
+      <ThemeBackdrop motif={theme.motif} />
+
       <Link
         to="/dashboard"
         className="mb-3 inline-flex items-center gap-1.5 rounded text-sm text-ink-500 transition-colors duration-150 hover:text-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
@@ -73,15 +84,35 @@ export function GroupDetail() {
         All chamas
       </Link>
 
-      <div className="animate-rise mb-6">
-        <h1 className="text-display text-ink-900">{group.name}</h1>
-        <p className="mt-1 text-sm text-ink-500">
-          <span className="font-medium text-ink-700">
-            {formatCents(group.contribution_amount_cents, group.currency)}
-          </span>{" "}
-          / {group.contribution_frequency} · {group.currency}
-        </p>
+      <div className="animate-rise mb-6 flex items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-display text-ink-900">{group.name}</h1>
+          <p className="mt-1 text-sm text-ink-500">
+            <span className="font-medium text-ink-700">
+              {formatCents(group.contribution_amount_cents, group.currency)}
+            </span>{" "}
+            / {group.contribution_frequency} · {group.currency}
+          </p>
+        </div>
+        {isTreasurer && (
+          <Button
+            variant={pickingTheme ? "primary" : "secondary"}
+            onClick={() => setPickingTheme((v) => !v)}
+            className="shrink-0"
+          >
+            <Palette size={15} />
+            <span className="hidden sm:inline">Theme</span>
+          </Button>
+        )}
       </div>
+
+      {pickingTheme && (
+        <ThemePicker
+          groupId={groupId}
+          current={group.theme}
+          onClose={() => setPickingTheme(false)}
+        />
+      )}
 
       <GroupSummary groupId={groupId} currency={group.currency} />
 

@@ -1,5 +1,9 @@
 from marshmallow import EXCLUDE, Schema, fields, validate
 
+# Kept in step with client/src/lib/themes.ts — the client owns the artwork and
+# palette, the server only guarantees the slug is one we recognise.
+THEMES = ["harambee", "mboga", "boda", "shule", "kilimo", "biashara"]
+
 
 class GroupCreateSchema(Schema):
     class Meta:
@@ -15,6 +19,7 @@ class GroupCreateSchema(Schema):
         load_default="monthly",
         validate=validate.OneOf(["weekly", "monthly"]),
     )
+    theme = fields.Str(required=False, load_default="harambee", validate=validate.OneOf(THEMES))
 
 
 class GroupUpdateSchema(Schema):
@@ -26,6 +31,7 @@ class GroupUpdateSchema(Schema):
     contribution_frequency = fields.Str(
         required=False, validate=validate.OneOf(["weekly", "monthly"])
     )
+    theme = fields.Str(required=False, validate=validate.OneOf(THEMES))
 
 
 class GroupSchema(Schema):
@@ -37,5 +43,6 @@ class GroupSchema(Schema):
     currency = fields.Str(dump_only=True)
     contribution_amount_cents = fields.Int(dump_only=True)
     contribution_frequency = fields.Str(dump_only=True)
+    theme = fields.Str(dump_only=True)
     created_by = fields.Str(dump_only=True)
     created_at = fields.DateTime(dump_only=True)

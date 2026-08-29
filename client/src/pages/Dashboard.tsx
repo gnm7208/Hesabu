@@ -10,6 +10,7 @@ import { useArrears } from "../hooks/useContributions";
 import { useCreateGroup, useGroups } from "../hooks/useGroups";
 import { ApiError } from "../lib/api";
 import { formatCents, formatCentsShort, parseToCents } from "../lib/money";
+import { THEMES, getTheme, themeVars, type ThemeId } from "../lib/themes";
 import type { Group } from "../lib/types";
 
 export function Dashboard() {
@@ -93,6 +94,7 @@ function CreateGroupForm({ onDone }: { onDone: () => void }) {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [frequency, setFrequency] = useState<"weekly" | "monthly">("monthly");
+  const [theme, setTheme] = useState<ThemeId>("harambee");
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
@@ -103,6 +105,7 @@ function CreateGroupForm({ onDone }: { onDone: () => void }) {
         name,
         contribution_amount_cents: parseToCents(amount || "0"),
         contribution_frequency: frequency,
+        theme,
       });
       onDone();
     } catch (err) {
@@ -137,6 +140,15 @@ function CreateGroupForm({ onDone }: { onDone: () => void }) {
             <option value="weekly">Weekly</option>
           </Select>
         </Field>
+        <Field label="Theme">
+          <Select value={theme} onChange={(e) => setTheme(e.target.value as ThemeId)}>
+            {THEMES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </Select>
+        </Field>
         <Button type="submit" disabled={createGroup.isPending}>
           {createGroup.isPending ? "Creating…" : "Create"}
         </Button>
@@ -164,8 +176,10 @@ function GroupCard({ group }: { group: Group }) {
   const expected = rows.reduce((sum, r) => sum + r.expected_cents, 0);
   const behind = rows.filter((r) => r.arrears_cents > 0).length;
 
+  const theme = getTheme(group.theme);
+
   return (
-    <Card interactive className="flex h-full flex-col">
+    <Card interactive className="flex h-full flex-col" style={themeVars(theme)}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-title text-ink-900">{group.name}</h2>
         {behind > 0 ? (
@@ -201,6 +215,7 @@ function GroupCard({ group }: { group: Group }) {
       )}
 
       <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-400">
+        <span className="size-2 rounded-full bg-chama-500" title={theme.label} />
         <Users size={13} />
         {rows.length} {rows.length === 1 ? "member" : "members"} on the schedule
       </p>

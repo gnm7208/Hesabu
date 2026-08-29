@@ -12,6 +12,10 @@ class Group(db.Model):
     currency = db.Column(db.String(3), nullable=False, default="KES")
     contribution_amount_cents = db.Column(db.Integer, nullable=False, default=0)
     contribution_frequency = db.Column(db.String(20), nullable=False, default="monthly")
+    # Visual identity, chosen by the treasurer to match what the chama is for
+    # (mama mboga, boda riders, school fees...). Group-level rather than
+    # per-user because it identifies the chama to everyone in it.
+    theme = db.Column(db.String(20), nullable=False, default="harambee", server_default="harambee")
     created_by = db.Column(db.String(36), db.ForeignKey("users.id"), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 

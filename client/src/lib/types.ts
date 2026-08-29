@@ -12,6 +12,7 @@ export interface Group {
   currency: string;
   contribution_amount_cents: number;
   contribution_frequency: "weekly" | "monthly";
+  theme: string;
   created_by: string;
   created_at: string;
 }
