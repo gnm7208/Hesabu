@@ -9,7 +9,7 @@ export function Card({ className = "", interactive = false, ...props }: CardProp
   return (
     <div
       className={
-        "rounded-xl border border-ink-200/70 bg-white p-4 shadow-card " +
+        "rounded-xl border border-ink-200/70 bg-surface p-4 shadow-card " +
         // Tailwind v4 already scopes hover: to (hover: hover), so touch devices
         // won't get stuck in the lifted state after a tap.
         (interactive

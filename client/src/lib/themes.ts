@@ -133,12 +133,34 @@ export function getTheme(id: string | null | undefined): Theme {
 }
 
 /**
+ * In dark mode the accent ramp reverses, mirroring what the ink ramp does in
+ * index.css: the low steps are subtle tinted *backgrounds* and the high steps are
+ * *foregrounds*, and both of those must flip lightness when the page does.
+ * Without this, `text-chama-700` stays a deep green and vanishes against a dark
+ * ground. 500 is the midpoint and is used for fills, so it maps to itself.
+ */
+const DARK_STEP_MAP: Record<number, number> = {
+  50: 800,
+  100: 700,
+  200: 600,
+  500: 500,
+  600: 200,
+  700: 100,
+  800: 50,
+};
+
+/**
  * Accent ramp as inline CSS custom properties, for spreading onto a wrapper's
  * `style`. Returned as a plain record so React can apply it without a cast at
  * every call site.
  */
-export function themeVars(theme: Theme): Record<string, string> {
+export function themeVars(theme: Theme, dark = false): Record<string, string> {
+  const accent = theme.accent as Record<number, string>;
   return Object.fromEntries(
-    Object.entries(theme.accent).map(([step, hex]) => [`--color-chama-${step}`, hex]),
+    Object.keys(accent).map((key) => {
+      const step = Number(key);
+      const source = dark ? (DARK_STEP_MAP[step] ?? step) : step;
+      return [`--color-chama-${step}`, accent[source]];
+    }),
   );
 }

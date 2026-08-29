@@ -22,7 +22,7 @@ export function GroupSummary({ groupId, currency }: { groupId: string; currency:
     return (
       <div className="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="rounded-xl border border-ink-200/70 bg-white px-4 py-3.5">
+          <div key={i} className="rounded-xl border border-ink-200/70 bg-surface px-4 py-3.5">
             <Skeleton className="h-3 w-20" />
             <Skeleton className="mt-2.5 h-6 w-28" />
           </div>
@@ -82,7 +82,7 @@ export function GroupSummary({ groupId, currency }: { groupId: string; currency:
       </div>
 
       {expected > 0 && (
-        <div className="rounded-xl border border-ink-200/70 bg-white px-4 py-3.5 shadow-card">
+        <div className="rounded-xl border border-ink-200/70 bg-surface px-4 py-3.5 shadow-card">
           <Meter
             value={collected}
             max={expected}

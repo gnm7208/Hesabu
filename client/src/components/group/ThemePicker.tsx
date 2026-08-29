@@ -1,5 +1,6 @@
 import { Check, Palette } from "lucide-react";
 import { useState } from "react";
+import { useAppearance } from "../../hooks/useAppearance";
 import { useUpdateGroup } from "../../hooks/useGroups";
 import { THEMES, getTheme, themeVars, type ThemeId } from "../../lib/themes";
 import { Button } from "../ui/Button";
@@ -22,6 +23,7 @@ export function ThemePicker({
   onClose: () => void;
 }) {
   const updateGroup = useUpdateGroup(groupId);
+  const { resolved } = useAppearance();
   const [error, setError] = useState<string | null>(null);
 
   async function choose(theme: ThemeId) {
@@ -35,7 +37,7 @@ export function ThemePicker({
   }
 
   return (
-    <div className="animate-rise mb-5 rounded-xl border border-ink-200/70 bg-white p-4 shadow-card">
+    <div className="animate-rise mb-5 rounded-xl border border-ink-200/70 bg-surface p-4 shadow-card">
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 text-sm font-medium text-ink-800">
           <Palette size={16} className="text-chama-600" />
@@ -56,7 +58,7 @@ export function ThemePicker({
               disabled={updateGroup.isPending}
               // Each swatch previews its own palette by scoping the accent vars to
               // itself, so the picker shows the actual colours rather than naming them.
-              style={themeVars(theme)}
+              style={themeVars(theme, resolved === "dark")}
               className={
                 "flex items-center gap-3 rounded-lg border p-2.5 text-left " +
                 "transition-[transform,border-color,background-color] duration-150 ease-out-strong " +

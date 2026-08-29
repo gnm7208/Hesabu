@@ -30,7 +30,7 @@ export function StatTile({
   }[tone];
 
   return (
-    <div className="rounded-xl border border-ink-200/70 bg-white px-4 py-3.5 shadow-card">
+    <div className="rounded-xl border border-ink-200/70 bg-surface px-4 py-3.5 shadow-card">
       <div className="flex items-center gap-1.5 text-xs font-medium text-ink-500">
         {Icon && <Icon size={13} strokeWidth={2} />}
         {label}

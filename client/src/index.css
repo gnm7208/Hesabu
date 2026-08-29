@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Dark mode keys off a data attribute rather than the media query directly, so one
+   mechanism serves all three states: "system" resolves to light/dark in JS and sets
+   the same attribute. Two sources of truth (media query AND attribute) would
+   disagree the moment someone picks a preference. */
+@custom-variant dark (&:where([data-appearance="dark"], [data-appearance="dark"] *));
+
 @theme {
   /* Brand green. M-PESA's palette is the reference point every Kenyan treasurer
      already reads as "money moved", so the ramp is tuned warm rather than the
@@ -36,6 +42,11 @@
   --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
 
+  /* Card/panel surface. Named separately from the ink ramp because "raised" is a
+     relationship, not a fixed step: in dark mode the surface must sit lighter than
+     the page, which no single ink step can express for both appearances. */
+  --color-surface: #ffffff;
+
   /* Two-layer shadows: a tight contact shadow plus a wider ambient one. A single
      large blur reads as a sticker floating above the page. */
   --shadow-card: 0 1px 2px rgb(22 43 34 / 0.04), 0 1px 3px rgb(22 43 34 / 0.06);
@@ -44,15 +55,71 @@
 }
 
 :root {
-  /* Light-only UI. Declaring "light dark" made dark-mode browsers apply their own
-     white-on-white user-agent styles to form controls. */
+  /* Set explicitly from JS to match the resolved appearance, so native controls
+     (selects, date pickers, scrollbars) follow. Left as "light" for the initial
+     paint before the inline bootstrap in index.html runs. */
   color-scheme: light;
+}
+
+/* Dark appearance.
+ *
+ * Implemented by redefining tokens rather than adding dark: variants throughout.
+ * Tailwind v4 emits every colour as a custom property that utilities read via
+ * var(), so overriding them here re-skins the whole app — components stay
+ * appearance-agnostic and can't drift out of sync.
+ *
+ * The ink ramp inverts: ink-50 is the page (lightest -> darkest) and ink-900 is
+ * primary text (darkest -> lightest), so `bg-ink-50` and `text-ink-900` keep
+ * meaning exactly what they meant in light mode.
+ */
+[data-appearance="dark"] {
+  color-scheme: dark;
+
+  --color-ink-50: #111614;
+  --color-ink-100: #1a211e;
+  --color-ink-200: #262e2a;
+  --color-ink-300: #3a443f;
+  --color-ink-400: #7c8a84;
+  --color-ink-500: #9aa8a1;
+  --color-ink-600: #b7c3be;
+  --color-ink-700: #d3dbd7;
+  --color-ink-800: #e9efec;
+  --color-ink-900: #f6f9f8;
+
+  --color-surface: #171e1b;
+
+  /* Status tints: the 50/100 steps become dark washes and the 600-800 steps
+     become light foregrounds, mirroring the ink inversion so every badge and
+     note keeps its light-mode meaning. The 500s are fills (meters, buttons) and
+     stay saturated — they read correctly on either ground. */
+  --color-red-50: oklch(27% 0.062 25);
+  --color-red-100: oklch(32% 0.075 25);
+  --color-red-600: oklch(78% 0.135 25);
+  --color-red-700: oklch(83% 0.12 25);
+
+  --color-amber-50: oklch(28% 0.055 75);
+  --color-amber-100: oklch(33% 0.07 75);
+  --color-amber-600: oklch(82% 0.13 75);
+  --color-amber-700: oklch(86% 0.115 75);
+  --color-amber-800: oklch(89% 0.1 75);
+
+  --color-blue-50: oklch(28% 0.06 255);
+  --color-blue-100: oklch(33% 0.075 255);
+  --color-blue-700: oklch(84% 0.11 255);
+
+  /* Shadows do almost nothing on a dark ground — depth comes from the surface
+     being lighter than the page — so they shrink to a hairline. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-card-lift: 0 4px 14px rgb(0 0 0 / 0.5);
+  --shadow-pop: 0 8px 28px rgb(0 0 0 / 0.6);
 }
 
 body {
   margin: 0;
   background: var(--color-ink-50);
   color: var(--color-ink-800);
+  /* Only the theme swap animates; instant inversion of a full page is jarring. */
+  transition: background-color 200ms ease, color 200ms ease;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
 }

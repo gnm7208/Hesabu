@@ -128,6 +128,23 @@ CSS custom properties and every utility reads them through `var()`, so writing
 `--color-chama-*` onto a wrapper re-tints every `bg-chama-*` / `text-chama-*` inside
 it.
 
+### Light / dark
+
+Independent of the chama theme. Three states — light, dark, or match the device —
+chosen from the header and remembered per browser; with nothing chosen the app
+follows `prefers-color-scheme` and updates live if the device flips.
+
+Dark mode is implemented by **redefining tokens**, not by scattering `dark:`
+variants: the ink ramp inverts (so `bg-ink-50` is still "the page" and
+`text-ink-900` is still "primary text"), `--color-surface` lifts above the page,
+and status tints swap their background and foreground steps. Components stay
+appearance-agnostic and can't drift out of sync. Accent ramps reverse the same way
+via `themeVars(theme, dark)` — otherwise `text-chama-700` would stay a deep green
+and disappear against a dark ground.
+
+An inline script in `index.html` applies the stored preference before first paint;
+without it dark-mode users get a white flash on every load.
+
 ## Deployment
 
 | Piece | Where | Config |

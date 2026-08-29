@@ -11,6 +11,7 @@ import { ThemeBackdrop } from "../components/ThemeBackdrop";
 import { Button } from "../components/ui/Button";
 import { Skeleton } from "../components/ui/Feedback";
 import { SideNav, type NavItem } from "../components/ui/SideNav";
+import { useAppearance } from "../hooks/useAppearance";
 import { useAuth } from "../hooks/useAuth";
 import { useArrears, useContributions } from "../hooks/useContributions";
 import { useGroup } from "../hooks/useGroups";
@@ -29,6 +30,7 @@ export function GroupDetail() {
   const { data: arrears } = useArrears(groupId ?? "");
   const [tab, setTab] = useState<Tab>("contributions");
   const [pickingTheme, setPickingTheme] = useState(false);
+  const { resolved } = useAppearance();
 
   if (!groupId) return null;
   if (isLoading || !group) {
@@ -73,7 +75,7 @@ export function GroupDetail() {
   return (
     // Scoping the accent vars here re-tints every chama-* utility in the subtree,
     // so the whole page takes the group's colour without any themed classnames.
-    <div style={themeVars(theme)}>
+    <div style={themeVars(theme, resolved === "dark")}>
       <ThemeBackdrop motif={theme.motif} />
 
       <Link

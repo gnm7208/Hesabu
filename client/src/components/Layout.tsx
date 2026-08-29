@@ -2,6 +2,7 @@ import { LogOut, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { AppearanceToggle } from "./ui/AppearanceToggle";
 
 export function Layout({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -17,7 +18,7 @@ export function Layout({ children }: { children: ReactNode }) {
       {/* Translucent chrome rather than an opaque strip: content passes under it,
           so the page reads as one surface with a floating layer over it. The
           saturate() keeps colour from going flat behind the blur. */}
-      <header className="sticky top-0 z-20 border-b border-ink-200/60 bg-white/70 backdrop-blur-xl backdrop-saturate-150">
+      <header className="sticky top-0 z-20 border-b border-ink-200/60 bg-surface/70 backdrop-blur-xl backdrop-saturate-150">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <Link
             to="/dashboard"
@@ -26,8 +27,10 @@ export function Layout({ children }: { children: ReactNode }) {
             <Wallet size={19} strokeWidth={2.1} />
             Hesabu
           </Link>
-          {user && (
-            <div className="flex items-center gap-1 text-sm">
+          <div className="flex items-center gap-2 text-sm">
+            <AppearanceToggle />
+            {user && (
+              <div className="flex items-center gap-1">
               <span className="hidden px-2 text-ink-600 sm:inline">{user.full_name}</span>
               <button
                 onClick={handleLogout}
@@ -36,8 +39,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 <LogOut size={15} />
                 Log out
               </button>
-            </div>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-7">{children}</main>

@@ -5,6 +5,26 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Hesabu</title>
+    <script>
+      // Runs before first paint so the page never flashes light before React
+      // mounts and applies the preference. Deliberately duplicates a few lines of
+      // AppearanceProvider — the alternative is a visible white flash on every
+      // load for dark-mode users, which no amount of tidiness is worth.
+      (function () {
+        try {
+          var stored = localStorage.getItem("hesabu.appearance");
+          var dark =
+            stored === "dark" ||
+            (stored !== "light" &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          var mode = dark ? "dark" : "light";
+          document.documentElement.dataset.appearance = mode;
+          document.documentElement.style.colorScheme = mode;
+        } catch (e) {
+          /* blocked storage — React will settle it on mount */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

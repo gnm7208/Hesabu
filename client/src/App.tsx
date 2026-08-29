@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navigate, Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AppearanceProvider } from "./context/AppearanceContext";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { Dashboard } from "./pages/Dashboard";
@@ -21,7 +22,8 @@ function RootRedirect() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <AppearanceProvider>
+      <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Router>
           <Routes>
@@ -51,7 +53,8 @@ function App() {
           </Routes>
         </Router>
       </AuthProvider>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </AppearanceProvider>
   );
 }
 

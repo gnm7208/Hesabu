@@ -7,6 +7,7 @@ import { EmptyState, ErrorNote, Skeleton } from "../components/ui/Feedback";
 import { Field, Input, Select } from "../components/ui/Input";
 import { Meter } from "../components/ui/Stat";
 import { useArrears } from "../hooks/useContributions";
+import { useAppearance } from "../hooks/useAppearance";
 import { useCreateGroup, useGroups } from "../hooks/useGroups";
 import { ApiError } from "../lib/api";
 import { formatCents, formatCentsShort, parseToCents } from "../lib/money";
@@ -176,10 +177,11 @@ function GroupCard({ group }: { group: Group }) {
   const expected = rows.reduce((sum, r) => sum + r.expected_cents, 0);
   const behind = rows.filter((r) => r.arrears_cents > 0).length;
 
+  const { resolved } = useAppearance();
   const theme = getTheme(group.theme);
 
   return (
-    <Card interactive className="flex h-full flex-col" style={themeVars(theme)}>
+    <Card interactive className="flex h-full flex-col" style={themeVars(theme, resolved === "dark")}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-title text-ink-900">{group.name}</h2>
         {behind > 0 ? (
