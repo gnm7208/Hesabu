@@ -6,10 +6,11 @@ import { Card } from "../components/ui/Card";
 import { EmptyState, ErrorNote, Skeleton } from "../components/ui/Feedback";
 import { Field, Input, Select } from "../components/ui/Input";
 import { useCreateGroup, useGroups } from "../hooks/useGroups";
+import { ApiError } from "../lib/api";
 import { formatCents, parseToCents } from "../lib/money";
 
 export function Dashboard() {
-  const { data: groups, isLoading } = useGroups();
+  const { data: groups, isLoading, error: loadError } = useGroups();
   const [showForm, setShowForm] = useState(false);
 
   return (
@@ -28,6 +29,16 @@ export function Dashboard() {
       </div>
 
       {showForm && <CreateGroupForm onDone={() => setShowForm(false)} />}
+
+      {loadError && (
+        <div className="mb-4">
+          <ErrorNote>
+            {loadError instanceof ApiError
+              ? loadError.message
+              : "Couldn't load your chamas."}
+          </ErrorNote>
+        </div>
+      )}
 
       {isLoading && (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -104,8 +115,10 @@ function CreateGroupForm({ onDone }: { onDone: () => void }) {
         contribution_frequency: frequency,
       });
       onDone();
-    } catch {
-      setError("Couldn't create the group — check the amount and try again.");
+    } catch (err) {
+      // Blanket-blaming the amount hid real causes — an expired session reported
+      // itself as a validation problem, which sent the user hunting the wrong bug.
+      setError(err instanceof ApiError ? err.message : "Couldn't create the group.");
     }
   }
 

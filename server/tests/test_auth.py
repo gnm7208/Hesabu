@@ -110,3 +110,34 @@ def test_server_error_keeps_detail_outside_production(client, app, monkeypatch):
 
     assert resp.status_code == 500
     assert resp.get_json()["detail"] == "something specific broke"
+
+
+def test_expired_token_is_rejected_with_readable_reason(client, app):
+    """An expired token must fail with a message the client can show a user.
+
+    flask-jwt-extended reports under `msg`, not `message`/`error`; the frontend
+    only read the latter two, so every auth failure surfaced as the meaningless
+    "Request failed (422)" instead of saying the session had expired.
+    """
+    import datetime
+
+    from flask_jwt_extended import create_access_token
+
+    token, _ = register_user(client, "expiry@example.com")
+    with app.app_context():
+        expired = create_access_token(
+            identity="whoever", expires_delta=datetime.timedelta(seconds=-1)
+        )
+
+    resp = client.post(
+        "/api/v1/groups",
+        headers={"Authorization": f"Bearer {expired}"},
+        json={"name": "Cousins", "contribution_amount_cents": 150000},
+    )
+
+    assert resp.status_code == 401
+    body = resp.get_json()
+    # Whatever the key, there must be a human-readable reason in the payload.
+    assert any(k in body for k in ("msg", "message", "error"))
+    assert "expired" in str(body).lower()
+    assert token  # the valid token path is covered elsewhere

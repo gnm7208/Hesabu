@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/Button";
 import { ErrorNote } from "../components/ui/Feedback";
 import { Field, Input } from "../components/ui/Input";
+import { SESSION_EXPIRED_KEY } from "../context/AuthContext";
 import { useAuth } from "../hooks/useAuth";
 import { ApiError } from "../lib/api";
 
@@ -14,6 +15,13 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Read once on mount and clear, so the notice shows on the redirect that
+  // followed the expiry and not on every later visit to this page.
+  const [expired] = useState(() => {
+    const flag = sessionStorage.getItem(SESSION_EXPIRED_KEY);
+    if (flag) sessionStorage.removeItem(SESSION_EXPIRED_KEY);
+    return Boolean(flag);
+  });
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -59,6 +67,11 @@ export function Login() {
             autoComplete="current-password"
           />
         </Field>
+        {expired && !error && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800 ring-1 ring-inset ring-amber-600/15">
+            Your session expired. Please log in again.
+          </p>
+        )}
         {error && <ErrorNote>{error}</ErrorNote>}
         <Button type="submit" disabled={isSubmitting} className="mt-1 w-full py-2.5">
           {isSubmitting ? "Logging in…" : "Log in"}

@@ -6,6 +6,13 @@ export function setAuthToken(token: string | null) {
   authToken = token;
 }
 
+let onUnauthorized: (() => void) | null = null;
+
+/** Registered by AuthProvider so a dead session can clear itself from anywhere. */
+export function setUnauthorizedHandler(handler: (() => void) | null) {
+  onUnauthorized = handler;
+}
+
 export class ApiError extends Error {
   status: number;
   constructor(message: string, status: number) {
@@ -24,7 +31,19 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const body = isJson ? await res.json() : null;
 
   if (!res.ok) {
-    const message = body?.message || body?.error || `Request failed (${res.status})`;
+    // flask-jwt-extended reports under `msg`, our own handlers under `message` /
+    // `error`. Missing `msg` meant every auth failure surfaced as the useless
+    // "Request failed (422)" instead of "Token has expired".
+    const message =
+      body?.message || body?.msg || body?.error || `Request failed (${res.status})`;
+
+    // 401 = expired, 422 = malformed/undecodable token. Either way the stored
+    // session is spent, and without a refresh route it cannot be revived — so
+    // clear it rather than letting every later write fail with a confusing error.
+    const isAuthFailure =
+      res.status === 401 || (res.status === 422 && /token|payload|signature/i.test(message));
+    if (isAuthFailure) onUnauthorized?.();
+
     throw new ApiError(message, res.status);
   }
   return body as T;

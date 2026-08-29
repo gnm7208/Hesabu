@@ -1,9 +1,10 @@
-import { useCallback, useState, type ReactNode } from "react";
-import { api, setAuthToken } from "../lib/api";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { api, setAuthToken, setUnauthorizedHandler } from "../lib/api";
 import type { User } from "../lib/types";
 import { AuthContext } from "./authContext";
 
 const STORAGE_KEY = "hesabu.auth";
+export const SESSION_EXPIRED_KEY = "hesabu.sessionExpired";
 
 interface StoredAuth {
   token: string;
@@ -64,6 +65,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthToken(null);
     setUser(null);
   }, []);
+
+  // A stored session outlives its token: the user object sits in localStorage, so
+  // the header still shows a name while every request 401s. Tear the session down
+  // as soon as the API rejects it, and leave a note so the login screen can say
+  // why the user landed back there.
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      if (localStorage.getItem(STORAGE_KEY)) {
+        sessionStorage.setItem(SESSION_EXPIRED_KEY, "1");
+      }
+      logout();
+    });
+    return () => setUnauthorizedHandler(null);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>

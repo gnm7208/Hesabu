@@ -18,7 +18,12 @@ class Config:
         "pool_recycle": 280,
     }
     JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "dev-secret")
-    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900)))
+    # 12h, not 15min. There is no refresh route yet, so access-token expiry is
+    # terminal — a 15-minute window meant a treasurer reconciling a month of
+    # statements would be logged out mid-task, and (before the client learned to
+    # detect it) saw the failure reported as a validation error. Shorten this
+    # again once a /auth/refresh endpoint exists to renew silently.
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 43200)))
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(
         seconds=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 2592000))
     )
