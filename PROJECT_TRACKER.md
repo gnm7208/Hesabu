@@ -89,3 +89,12 @@ Store listing copy is in `../store-packaging/listings/hesabu.md`.
 
 **Next:** push so the manifest/assetlinks/privacy page go live; GitHub Release with the APK;
 Microsoft Store via PWABuilder; in-app account deletion; keep the API warm before store traffic.
+
+## 2026-09-19 (later)
+
+Shipped the store prerequisites: in-app account deletion (`DELETE /api/v1/auth/me`, password
+re-checked, 403 on mismatch so the client does not mistake it for an expired session; groups the
+user created cascade away, memberships in other treasurers' chamas are unlinked and their
+statements re-attributed to the group creator) with a new `/account` page linked from the header.
+PWA/store changes deployed and verified live; GitHub Release v1.0.0-android published; a
+10-minute GitHub Actions ping keeps the Render API awake.

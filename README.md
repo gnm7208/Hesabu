@@ -120,7 +120,7 @@ All routes are prefixed `/api/v1`.
 
 | Domain | Routes |
 |---|---|
-| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me` |
+| Auth | `POST /auth/register`, `POST /auth/login`, `POST /auth/logout`, `GET /auth/me`, `DELETE /auth/me` (password in body; erases own groups, unlinks memberships elsewhere) |
 | Groups | `POST /groups`, `GET /groups`, `GET /groups/<id>`, `PATCH /groups/<id>` |
 | Members | `POST /groups/<id>/members`, `GET /groups/<id>/members`, `PATCH .../<member_id>`, `DELETE .../<member_id>` |
 | Contributions | `POST /groups/<id>/contributions`, `GET /groups/<id>/contributions`, `POST /groups/<id>/contributions/import`, `PATCH .../<contribution_id>/resolve`, `GET /groups/<id>/arrears` |

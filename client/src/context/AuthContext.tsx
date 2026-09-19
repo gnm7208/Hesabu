@@ -66,6 +66,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   }, []);
 
+  const deleteAccount = useCallback(
+    async (password: string) => {
+      await api.delete<{ message: string }>("/auth/me", { password });
+      logout();
+    },
+    [logout],
+  );
+
   // A stored session outlives its token: the user object sits in localStorage, so
   // the header still shows a name while every request 401s. Tear the session down
   // as soon as the API rejects it, and leave a note so the login screen can say
@@ -81,7 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [logout]);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, logout, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   );

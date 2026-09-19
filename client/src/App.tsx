@@ -7,6 +7,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./hooks/useAuth";
 import { Dashboard } from "./pages/Dashboard";
 import { GroupDetail } from "./pages/GroupDetail";
+import { Account } from "./pages/Account";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 
@@ -36,6 +37,16 @@ function App() {
                 <ProtectedRoute>
                   <Layout>
                     <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Account />
                   </Layout>
                 </ProtectedRoute>
               }

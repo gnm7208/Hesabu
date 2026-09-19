@@ -141,3 +141,47 @@ def test_expired_token_is_rejected_with_readable_reason(client, app):
     assert any(k in body for k in ("msg", "message", "error"))
     assert "expired" in str(body).lower()
     assert token  # the valid token path is covered elsewhere
+
+
+def test_delete_account_rejects_wrong_password_without_signing_out(client):
+    token, _ = register_user(client, "ann@example.com")
+    resp = client.delete(
+        "/api/v1/auth/me", json={"password": "wrong-one"}, headers=auth_headers(token)
+    )
+    assert resp.status_code == 403, "must not be 401 — the client treats that as an expired session"
+    assert client.get("/api/v1/auth/me", headers=auth_headers(token)).status_code == 200
+
+
+def test_delete_account_erases_own_groups_but_keeps_other_treasurers_books(client):
+    from server.tests.helpers import add_member, create_group
+
+    treasurer_token, treasurer_id = register_user(client, "treasurer@example.com")
+    other_token, other_id = register_user(client, "other@example.com", phone="0722000009")
+
+    own_group = create_group(client, treasurer_token, name="Own Chama")["id"]
+    other_group = create_group(client, other_token, name="Someone Else's Chama")["id"]
+    # The leaving user is also a member of the other treasurer's chama.
+    add_member(client, other_token, other_group, full_name="Leaving Member", phone="0722000010")
+
+    resp = client.delete(
+        "/api/v1/auth/me", json={"password": "password123"}, headers=auth_headers(treasurer_token)
+    )
+    assert resp.status_code == 200
+
+    # Gone: the login and the chama they owned.
+    assert (
+        client.post(
+            "/api/v1/auth/login", json={"email": "treasurer@example.com", "password": "password123"}
+        ).status_code
+        == 401
+    )
+    assert client.get(
+        f"/api/v1/groups/{own_group}", headers=auth_headers(other_token)
+    ).status_code in (403, 404)
+
+    # Intact: the other treasurer's group and its member list.
+    other = client.get(f"/api/v1/groups/{other_group}", headers=auth_headers(other_token))
+    assert other.status_code == 200
+    members = client.get(f"/api/v1/groups/{other_group}/members", headers=auth_headers(other_token))
+    assert members.status_code == 200
+    assert any(m["full_name"] == "Leaving Member" for m in members.get_json())

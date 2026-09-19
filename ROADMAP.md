@@ -71,4 +71,5 @@ with no CORS-credentials/CSRF-cookie complexity.
 - [x] PWA (manifest, offline shell, icons, brand mark), assetlinks, privacy policy, TWA project
 - [ ] Deploy → GitHub Release (APK) → Microsoft Store (PWABuilder) → Amazon / Samsung
 - [ ] Google Play after the one-time $25 registration (12 testers × 14 days closed test first)
-- [ ] In-app account deletion; API keep-alive or paid tier
+- [x] In-app account deletion (`DELETE /api/v1/auth/me`, Account page)
+- [x] API keep-alive (`.github/workflows/keepalive.yml`, 10-minute ping)

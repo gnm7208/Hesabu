@@ -1,4 +1,4 @@
-import { LogOut, Wallet } from "lucide-react";
+import { LogOut, UserRound, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
@@ -31,7 +31,14 @@ export function Layout({ children }: { children: ReactNode }) {
             <AppearanceToggle />
             {user && (
               <div className="flex items-center gap-1">
-              <span className="hidden px-2 text-ink-600 sm:inline">{user.full_name}</span>
+              <Link
+                to="/account"
+                className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-ink-600 transition-[background-color,color] duration-150 hover:bg-ink-100 hover:text-ink-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
+              >
+                <UserRound size={15} />
+                <span className="hidden sm:inline">{user.full_name}</span>
+                <span className="sm:hidden">Account</span>
+              </Link>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-ink-500 transition-[transform,background-color,color] duration-150 ease-out-strong hover:bg-ink-100 hover:text-ink-800 active:scale-[0.97] active:duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chama-500/40"
