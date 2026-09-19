@@ -27,6 +27,21 @@ Demo logins (from `server/seed.py`) — every account uses the password `hesabu1
 | `kilimo@hesabu.local` | Kilimo Growers | Kilimo |
 | `biashara@hesabu.local` | Biashara Circle | Biashara |
 
+## Install as an app
+
+Hesabu is a Progressive Web App. The web build in `client/` is also what ships to the app stores — there is no separate mobile codebase.
+
+| Platform | How |
+|---|---|
+| **Android / desktop Chrome** | Open <https://hesabu-sigma.vercel.app> → browser menu → **Install app** (or **Add to Home screen**). |
+| **Android APK** | Download the latest signed APK from [GitHub Releases](https://github.com/gnm7208/Hesabu/releases) and open it (allow "install from this source" once). |
+| **Microsoft Store** | Listed as **Hesabu** (packaged from the PWA with PWABuilder). |
+| **Google Play / Amazon / Samsung** | Same Android package (`com.gnm7208.hesabu`); listings go live per store — check Releases for status. |
+
+Privacy policy: <https://hesabu-sigma.vercel.app/privacy.html> (also linked from every store listing; deletion requests are handled by email as described there).
+
+**How it works.** `client/public/manifest.webmanifest` declares the app (name, colours, PNG + maskable icons), `client/public/sw.js` caches the app shell so it opens with no signal (API responses are deliberately never cached), and `client/src/lib/register-sw.ts` registers the worker in production builds only. `client/public/.well-known/assetlinks.json` links the site to the Android signing key so the Android app opens full-screen without browser chrome; the Android project itself lives outside this repo in `../store-packaging/` (Bubblewrap TWA) and the signing key in `~/.android-signing/` — never commit either.
+
 ## The problem
 
 Chamas move billions of shillings in aggregate but still run on WhatsApp threads and paper
@@ -46,6 +61,8 @@ reconciliation is the part nobody has solved.
   **arrears** against the group's contribution schedule.
 - Generate an immutable **statement** snapshot (period totals, per-member breakdown, arrears)
   that the treasurer can share with the group.
+- **Installable app** — Hesabu is a PWA (manifest + offline app shell) and is packaged for
+  Android and the Microsoft Store from the same build; see [Install as an app](#install-as-an-app).
 
 ## Beyond MVP
 

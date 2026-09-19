@@ -74,3 +74,18 @@ arrears) with zero console errors and zero failed requests.
 toast notifications / better loading states. Housekeeping: rotate the Render + Vercel API
 tokens (they were pasted into a chat transcript), and delete the stray free "Hesabu render
 api" Key Value/Redis instance sitting unused in the Fiti/Production environment.
+
+## 2026-09-19
+
+Packaged Hesabu for distribution on a $0 budget. The placeholder purple favicon (shared with
+two other projects) is gone; Hesabu now has its own mark (ledger rows + tick on deep green) and a
+full PNG/maskable icon set. Added `manifest.webmanifest`, an app-shell service worker that never
+caches `/api/*`, production-only registration in `client/src/lib/register-sw.ts`, Apple/mobile
+meta tags, a real page title, `/.well-known/assetlinks.json` and `/privacy.html`.
+
+Generated an Android signing key (`~/.android-signing/hesabu.keystore`, backed up nowhere yet —
+do that) and a Bubblewrap TWA project in `../store-packaging/hesabu` (`com.gnm7208.hesabu`).
+Store listing copy is in `../store-packaging/listings/hesabu.md`.
+
+**Next:** push so the manifest/assetlinks/privacy page go live; GitHub Release with the APK;
+Microsoft Store via PWABuilder; in-app account deletion; keep the API warm before store traffic.

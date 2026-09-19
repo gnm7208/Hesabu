@@ -65,3 +65,10 @@ with no CORS-credentials/CSRF-cookie complexity.
 - `GroupMember` is separate from `User` — most chama members won't have logged in yet when the
   treasurer first imports a statement; they're tracked by name + phone and linked to a `User`
   later if they create an account.
+
+## Distribution ($0 path)
+
+- [x] PWA (manifest, offline shell, icons, brand mark), assetlinks, privacy policy, TWA project
+- [ ] Deploy → GitHub Release (APK) → Microsoft Store (PWABuilder) → Amazon / Samsung
+- [ ] Google Play after the one-time $25 registration (12 testers × 14 days closed test first)
+- [ ] In-app account deletion; API keep-alive or paid tier

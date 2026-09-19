@@ -1,0 +1,10 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.gnm7208.hesabu",
+      "sha256_cert_fingerprints": ["05:11:8C:81:64:18:AB:0B:84:D9:26:D3:59:68:CC:C6:E7:1E:C1:D8:EB:EE:84:97:F9:A7:B1:C6:49:71:14:9B"]
+    }
+  }
+]
